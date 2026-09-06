@@ -7,6 +7,8 @@ header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: no-referrer');
 header("Content-Security-Policy: default-src 'none'; frame-ancestors 'none'");
 
+require __DIR__ . '/booth_pass.php';
+
 const MAX_BODY = 262144;
 const MAX_SIGNALS = 200;
 const ROOM_TTL = 21600;
@@ -129,6 +131,7 @@ $input = ($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' ? body() : [];
 if ($action === 'ping') respond(200, ['ok' => true, 'build' => 'FJN-Booth-V3-Hostinger-1']);
 
 if ($action === 'create') {
+    require_booth_pass('ipv1', $input);
     for ($attempt = 0; $attempt < 10; $attempt++) {
         $code = new_code();
         $token = new_token();
@@ -152,6 +155,7 @@ $code = room_code($rawRoom);
 if ($code === null) respond(400, ['error' => 'Invalid room code']);
 
 if ($action === 'join') {
+    require_booth_pass('ipv1', $input);
     with_room_lock($dataDir, $code, function (string $path, ?array $room) use ($code): never {
         if ($room === null) respond(404, ['error' => 'Room not found']);
         if (!empty($room['guest'])) respond(409, ['error' => 'Room full', 'full' => true]);
