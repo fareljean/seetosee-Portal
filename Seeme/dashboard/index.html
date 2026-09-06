@@ -1,0 +1,297 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#07080a"><title>SeeToSee Dashboard</title><link rel="stylesheet" href="dashboard.css?v=27.2.1"><link rel="stylesheet" href="nda.css?v=1.0.1">
+<style id="sts-gate-template-editor-style">
+.nda-template-editor{margin:14px 0 12px;padding:12px;border:1px solid rgba(201,168,76,.22);border-radius:14px;background:rgba(255,255,255,.025)}
+.nda-template-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.nda-template-title{font-size:.72rem;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#d9c47c}
+.nda-template-smart{font-size:.68rem;color:#aeb3bd;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:5px 8px}
+.nda-template-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
+.nda-template-btn{width:100%;min-width:0;min-height:44px;border:1px solid rgba(255,255,255,.16);background:rgba(14,16,21,.82);color:#f0f0f0;border-radius:999px;padding:8px 6px;font:inherit;font-size:.72rem;font-weight:750;line-height:1.15;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center}
+.nda-template-btn:hover{border-color:rgba(201,168,76,.55)}
+.nda-template-btn.active{border-color:#e0bf58;background:rgba(201,168,76,.15);color:#f4d86f}
+.nda-template-btn:focus-visible{outline:2px solid #f2d46e;outline-offset:2px}
+.nda-template-status{margin-top:8px;font-size:.7rem;color:#aeb3bd}
+@media (max-width:980px){.nda-template-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:560px){.nda-template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nda-template-btn{border-radius:13px;min-height:48px;font-size:.7rem}}
+</style>
+<style id="sts-nda-internal-route-v47">
+/* V4.7 SUPER-SURGICAL SPACING FIX:
+   keep both Gate -> Protecting pairs side-by-side like the original flow.
+   Only stack on very narrow phones. */
+.nda-route-pair{position:relative;margin-bottom:12px}
+.nda-route-pair .nda-facts{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:14px!important;
+}
+.nda-route-pair .nda-facts>div{
+  position:relative;
+  z-index:1;
+  min-height:96px!important;
+  padding:16px 20px!important;
+  border-radius:18px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.nda-route-pair .nda-facts span{
+  font-size:11px;
+  letter-spacing:.16em;
+  margin-bottom:8px;
+}
+.nda-route-pair .nda-facts strong{
+  font-size:clamp(16px,2vw,21px);
+  line-height:1.24;
+  overflow-wrap:anywhere;
+}
+.nda-route-pair.internal::before{
+  content:"";
+  position:absolute;
+  z-index:0;
+  left:calc(50% - 7px);
+  right:calc(50% - 7px);
+  top:50%;
+  height:3px;
+  transform:translateY(-50%);
+  background:#35d879;
+  box-shadow:0 0 10px rgba(53,216,121,.48);
+}
+.nda-route-pair.internal .nda-facts>div{
+  border-color:rgba(53,216,121,.34);
+}
+#nda-current-email{display:none!important}
+
+/* Do not break the pair too early. The WebBook reference stays side-by-side. */
+@media(max-width:520px){
+  .nda-route-pair .nda-facts{
+    grid-template-columns:1fr!important;
+    gap:10px!important;
+  }
+  .nda-route-pair.internal::before{
+    left:50%;
+    right:auto;
+    top:calc(50% - 5px);
+    width:3px;
+    height:10px;
+    transform:translateX(-50%);
+  }
+  .nda-route-pair .nda-facts>div{
+    min-height:88px!important;
+    padding:14px 16px!important;
+  }
+}
+</style>
+<style id="sts-webbook-dashboard-card-v50">
+#webbook{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+}
+.webbook-dashboard-card{
+  width:min(100%,760px);
+  border-radius:26px;
+  padding:20px 24px 22px;
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  background:rgba(10,7,2,.52);
+  border:2px solid rgba(201,168,76,.62);
+  box-shadow:0 18px 38px -14px rgba(0,0,0,.72),0 0 22px rgba(201,168,76,.13);
+}
+.webbook-dashboard-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(ellipse 80% 42% at 50% 0%,rgba(201,168,76,.12),transparent 70%);
+  pointer-events:none;
+}
+.webbook-dashboard-card>*{position:relative;z-index:1}
+.webbook-card-badge{
+  font-size:.72rem;
+  font-weight:800;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  padding:7px 14px;
+  border-radius:999px;
+  display:inline-flex;
+  width:fit-content;
+  margin-bottom:8px;
+  background:rgba(201,168,76,.12);
+  color:#e8cf78;
+  border:1px solid rgba(201,168,76,.45);
+}
+.webbook-card-note{
+  font-size:.86rem;
+  color:rgba(255,255,255,.58);
+  margin-bottom:8px;
+}
+.webbook-card-title{
+  font-size:clamp(1.55rem,3vw,2.05rem);
+  line-height:1.06;
+  font-weight:900;
+  letter-spacing:-.025em;
+  color:#fff;
+  margin-bottom:6px;
+}
+.webbook-card-desc{
+  font-size:1.02rem;
+  color:rgba(255,255,255,.72);
+  margin-bottom:14px;
+}
+.webbook-card-input{
+  width:100%;
+  min-height:68px;
+  background:rgba(255,255,255,.07);
+  border:2px solid rgba(255,255,255,.12);
+  border-radius:14px;
+  padding:0 18px;
+  font:inherit;
+  font-size:1.15rem;
+  color:#fff;
+  outline:none;
+  -webkit-appearance:none;
+  transition:border-color .18s,box-shadow .18s;
+  margin-bottom:11px;
+}
+.webbook-card-input::placeholder{color:rgba(255,255,255,.32)}
+.webbook-card-input:focus{
+  border-color:#d8b746;
+  box-shadow:0 0 0 2px rgba(216,183,70,.08);
+}
+.webbook-card-start{
+  width:100%;
+  min-height:72px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(180deg,#ffe884 0%,#f0c94f 100%);
+  color:#080808;
+  font:inherit;
+  font-size:1.28rem;
+  font-weight:900;
+  letter-spacing:.015em;
+  cursor:pointer;
+  box-shadow:0 0 22px rgba(241,200,72,.24);
+}
+.webbook-card-start:active{transform:scale(.992)}
+#webbook-message{
+  width:min(100%,760px);
+  margin-top:12px;
+}
+.webbook-card-media-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 118px;
+  gap:10px;
+  margin:0 0 11px;
+  align-items:stretch;
+}
+.webbook-card-media-btn{
+  min-height:56px;
+  border:1.5px solid rgba(201,168,76,.5);
+  border-radius:14px;
+  background:rgba(201,168,76,.08);
+  color:#f0d36e;
+  font:inherit;
+  font-size:.86rem;
+  font-weight:900;
+  letter-spacing:.04em;
+  cursor:pointer;
+}
+.webbook-card-media-btn:hover{background:rgba(201,168,76,.13)}
+.webbook-card-media-btn:disabled{opacity:.55;cursor:wait}
+.webbook-card-media-preview{
+  min-height:56px;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:14px;
+  overflow:hidden;
+  background:#090b0f;
+}
+.webbook-card-media-preview img,
+.webbook-card-media-preview video{
+  width:100%;
+  height:100%;
+  min-height:56px;
+  max-height:86px;
+  object-fit:cover;
+  display:block;
+}
+@media(max-width:700px){
+  .webbook-card-media-row{grid-template-columns:1fr}
+  .webbook-card-media-preview{min-height:120px}
+}
+@media(max-width:700px){
+  .webbook-dashboard-card{padding:17px;border-radius:20px}
+  .webbook-card-input{min-height:56px;font-size:1rem}
+  .webbook-card-start{min-height:60px;font-size:1.05rem}
+}
+</style></head><body><div class="shell"><aside class="side"><a class="brand" href="../">SEE<span>TO</span>SEE</a><nav><a href="#overview">Overview</a><a href="#email">Email</a><a href="#prefix">PreFix</a><a href="#nda">NDA Gate</a><a href="#webbook">WebBook</a><a href="#billing">Billing</a><a href="#security">Profile & security</a></nav><button class="signout" data-signout>Sign out</button></aside><main class="content"><div class="topline"><div><div class="eyebrow">SeeToSee member room · V27 PreFix</div><h1>Welcome, <span data-member-name>member</span>.</h1></div><div class="status" id="account-status">Loading secure session…</div></div><div class="grid">
+<section class="card" id="overview"><div class="eyebrow">Account overview</div><h2>Your SeeToSee account</h2><dl class="meta"><dt>Member ID</dt><dd id="member-id">—</dd><dt>Email</dt><dd id="member-email">—</dd><dt>Verified</dt><dd id="member-verified">—</dd><dt>Joined</dt><dd id="member-joined">—</dd><dt>Last login</dt><dd id="member-login">—</dd></dl></section>
+<section class="card" id="email"><div class="eyebrow">Identity</div><h2>Email</h2><p id="email-hub-copy">Your verified email is the source of truth for PreFix, Portal, offers, and booth access.</p><dl class="meta"><dt>Account email</dt><dd id="email-hub-address">—</dd><dt>Status</dt><dd id="email-hub-status">—</dd></dl><div class="actions" id="email-hub-actions"><button class="btn" type="button" id="email-resend" hidden>Resend verification</button><a class="btn ghost" href="#profile">Change email</a></div><div class="message" id="email-hub-message"></div></section>
+<section class="card wide" id="prefix"><div class="eyebrow">One-month free reservation, then $12/month</div><div class="prefix-status-row"><div><h2>Your PreFix</h2><p id="prefix-status-copy">Choose an available PreFix. Its free reservation lasts one month.</p></div><div class="prefix-pill" id="prefix-pill">NOT LOCKED</div></div><form id="prefix-form"><div class="form-grid"><label class="field"><span>Name</span><input name="handle" placeholder="YourName" autocomplete="off" required maxlength="32"></label><label class="field"><span>Ending</span><select name="suffix"><option value="iam">.iam</option><option value="live">.live</option><option value="sells">.sells</option><option value="cash">.cash</option><option value="im">.im</option><option value="online">.online</option></select></label></div><label class="field"><span>Destination URL</span><input name="destination_url" type="url" placeholder="https://yourwebsite.com/page" required></label><div id="prefix-availability" class="message"></div><button class="btn" type="submit" id="prefix-lock-btn">Lock / update PreFix</button><p class="subtle" id="prefix-verify-hint" hidden>Verify your email to lock a PreFix.</p></form><div class="actions" id="prefix-activate-row"><button class="btn ghost" id="prefix-activate">Activate PreFix — $12/month</button><span class="chip" id="prefix-active-chip" hidden>PreFix active</span></div></section>
+<section class="card wide nda-hub" id="nda"><div class="nda-head"><div><div class="eyebrow">Included with your SeeToSee account</div><h2>Your NDA Gate</h2><p>Build the Gate, keep the protected destination behind it, and keep signer records in this same dashboard.</p></div><div class="nda-pill" id="nda-pill">LOADING</div></div><div class="nda-current">
+<!-- Existing route: unchanged data, now shown as an equal Gate -> Protecting pair. -->
+<div class="nda-route-pair external">
+  <div class="nda-facts">
+    <div><span>Gate</span><strong id="nda-current-title">Your NDA Gate</strong></div>
+    <div><span>Protecting</span><strong id="nda-current-url">—</strong></div>
+  </div>
+</div>
+
+<!-- Added internal reservation: identical pair, green connection. -->
+<div class="nda-route-pair internal">
+  <div class="nda-facts">
+    <div><span>Gate</span><strong>SeeToSee NDA Gate</strong></div>
+    <div><span>Protecting</span><strong><a id="nda-webbook-route" href="#webbook" style="color:inherit;text-decoration:none">Your SeeToSee WebBook</a></strong></div>
+  </div>
+</div>
+
+<!-- Kept in DOM so the existing dashboard JS remains untouched. -->
+<strong id="nda-current-email" aria-hidden="true">—</strong>
+
+<div class="actions nda-actions"><a class="btn" id="nda-build" href="https://seetosee.org/?resume_nda=1">Build / continue NDA Gate</a><button class="btn ghost" id="nda-continue-current" type="button">Keep working</button><a class="btn ghost" id="nda-preview-current" target="_blank" rel="noopener" hidden>Check it out ↗</a><a class="btn ghost" id="nda-download-current" hidden>Download Gate</a><button class="btn ghost" id="nda-save-wording" type="button" hidden>Save wording</button></div>
+<div class="nda-template-editor" id="nda-template-editor" hidden>
+  <div class="nda-template-top">
+    <div class="nda-template-title">Gate templates</div>
+    <div class="nda-template-smart">Smart sizing: ON</div>
+  </div>
+  <div class="nda-template-grid" id="nda-template-grid">
+    <button class="nda-template-btn" type="button" data-gate-template="nda">NDA Gate</button>
+    <button class="nda-template-btn" type="button" data-gate-template="agree">Agree to Disagree</button>
+    <button class="nda-template-btn" type="button" data-gate-template="public">Public Gate</button>
+    <button class="nda-template-btn" type="button" data-gate-template="holiday">Holiday Gate</button>
+    <button class="nda-template-btn" type="button" data-gate-template="invitation">Invitation Gate</button>
+    <button class="nda-template-btn" type="button" data-gate-template="early">Early Access</button>
+    <button class="nda-template-btn" type="button" data-gate-template="message">Message Gate</button>
+    <button class="nda-template-btn" type="button" data-gate-template="custom">Custom</button>
+  </div>
+  <div class="nda-template-status" id="nda-template-status">Current saved wording · choose a template only when you want to replace it.</div>
+</div>
+<div class="message" id="nda-save-msg"></div><div class="nda-live-preview" id="nda-live-preview" hidden><div class="nda-preview-label">SAVED GATE PREVIEW</div><video id="nda-preview-video" muted autoplay loop playsinline preload="metadata" poster="../Zaxis/silvertunell-poster.jpg" hidden></video><img id="nda-preview-image" alt="Saved Gate visual" hidden><iframe id="nda-preview-frame" title="Saved NDA Gate preview" hidden></iframe></div></div></section>
+<section class="card wide" id="webbook">
+  <div class="webbook-dashboard-card">
+    <div class="webbook-card-badge">◆ BUILD A WEBSITE</div>
+    <input class="webbook-card-input" id="webbook-name-input" type="text"
+      autocomplete="organization" placeholder="Name / Company">
+
+    <input class="webbook-card-input" id="webbook-about-input" type="text"
+      autocomplete="off" placeholder="What do you do?">
+
+    <div class="webbook-card-media-row">
+      <button class="webbook-card-media-btn" id="webbook-media-upload" type="button">＋ UPLOAD PHOTO / VIDEO</button>
+      <div class="webbook-card-media-preview" id="webbook-media-preview" hidden></div>
+      <input id="webbook-media-input" type="file" hidden
+        accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm,video/quicktime">
+    </div>
+
+    <button class="webbook-card-start" id="webbook-open" type="button">◆ Start Building →</button>
+  </div>
+
+  <div class="message" id="webbook-message">Changes here save to this SeeToSee account automatically.</div>
+</section>
+<section class="card wide" id="nda-gates"><div class="nda-rowhead"><div><div class="eyebrow">My NDA Gates</div><h2>Protected destinations</h2></div><a class="btn ghost nda-small-btn" href="https://seetosee.org/?resume_nda=1">+ New / continue Gate</a></div><div class="table-wrap"><table><thead><tr><th>Gate</th><th>Destination</th><th>Signers</th><th>Status</th><th>Action</th></tr></thead><tbody id="nda-gate-rows"><tr><td colspan="5" class="empty">Loading NDA Gates…</td></tr></tbody></table></div></section>
+<section class="card wide" id="nda-signers"><div class="nda-rowhead"><div><div class="eyebrow">Signer records</div><h2>Who agreed before entering</h2></div><a class="btn ghost nda-small-btn" href="../api/nda/export.php">Export CSV</a></div><div class="table-wrap"><table><thead><tr><th>Record</th><th>Gate</th><th>Signer</th><th>Signed</th><th>Email status</th></tr></thead><tbody id="nda-signer-rows"><tr><td colspan="5" class="empty">Loading signer records…</td></tr></tbody></table></div></section>
+<section class="card wide" id="products"><div class="eyebrow">My products & entitlements</div><h2>What your account can use now</h2><div class="chips" id="entitlement-chips"><span class="chip">Loading…</span></div><div class="table-wrap"><table><thead><tr><th>Order</th><th>Product</th><th>Amount</th><th>Status</th><th>Date UTC</th></tr></thead><tbody id="order-rows"><tr><td colspan="5" class="empty">Loading orders…</td></tr></tbody></table></div></section>
+<section class="card wide" id="booth"><div class="eyebrow">Live video booths</div><h2>Enter a booth</h2><p>Available with an active Portal membership, or an unused Personal Website Consultation purchase.</p><div class="actions"><button class="btn ghost" id="booth-enter-ipv1">Enter Two-Seat Booth</button><button class="btn ghost" id="booth-enter-ipv2">Enter Four-Seat Booth</button></div><div class="message" id="booth-message"></div></section>
+<section class="card" id="billing"><div class="eyebrow">Stripe billing</div><h2>Secure billing</h2><p>Checkout redirects do not grant access. Orders and entitlements are updated from verified Stripe webhook state.</p><button class="btn ghost" id="billing-portal">Open Customer Portal</button></section>
+<section class="card" id="profile"><div class="eyebrow">Profile</div><h2>Member details</h2><form id="profile-form"><label class="field"><span>Name</span><input name="name" autocomplete="name" required></label><label class="field"><span>Account email</span><input name="email" type="email" autocomplete="email" required></label><label class="field"><span>Notification email</span><input name="notification_email" type="email" autocomplete="email"></label><label class="field"><span>Default destination</span><input name="destination_url" type="url"></label><label class="field"><span>Current password (only when changing email)</span><input name="current_password" type="password" autocomplete="current-password"></label><button class="btn" type="submit">Update profile</button><div class="message" data-form-message></div></form></section>
+<section class="card" id="security"><div class="eyebrow">Security</div><h2>Password and account</h2><form id="password-form"><label class="field"><span>Current password</span><input name="current_password" type="password" autocomplete="current-password" required></label><label class="field"><span>New password</span><input name="new_password" type="password" autocomplete="new-password" minlength="12" required></label><button class="btn" type="submit">Change password</button><div class="message" data-form-message></div></form><div class="actions"><button class="btn ghost" data-signout>Sign out</button><button class="btn danger" id="delete-account">Delete account</button></div></section>
+</div></main></div><script src="../assets/auth.js?v=27.1.1"></script><script src="dashboard.js?v=27.2.7"></script><script src="nda.js?v=1.0.5"></script></body></html>
