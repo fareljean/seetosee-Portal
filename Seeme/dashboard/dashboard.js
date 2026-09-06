@@ -381,5 +381,6 @@ if(wbFront)wbFront.addEventListener('click',async e=>{
 const wbRoute=$('#nda-webbook-route');
 if(wbRoute)wbRoute.addEventListener('click',()=>{setTimeout(()=>{const n=$('#webbook-name-input');if(n)n.focus({preventScroll:true})},80)});
 
-async function init(){await SeeToSeeAuth.ready;member=SeeToSeeAuth.member();if(!member){location.href='../?signin=1';return}renderMember();try{await loadCommerce()}catch(e){$('#account-status').textContent=e.message;$('#account-status').style.color='var(--red)'}}init();
+function showPurchaseBanner(){const q=new URLSearchParams(location.search);const purchase=q.get('purchase');if(purchase!=='success'&&purchase!=='portal')return;const el=$('#purchase-banner');if(!el)return;el.hidden=false;el.className='message show success';if(purchase==='portal'){el.innerHTML='Portal purchase received. When access is active, use <a href="#booth" style="color:inherit;font-weight:800;text-decoration:underline">Enter booth</a> below.'}try{q.delete('purchase');q.delete('order');const clean=location.pathname+(q.toString()?'?'+q.toString():'')+(location.hash||'#booth');history.replaceState(null,'',clean)}catch(_){}}
+async function init(){await SeeToSeeAuth.ready;member=SeeToSeeAuth.member();if(!member){location.href='../?signin=1';return}renderMember();showPurchaseBanner();try{await loadCommerce()}catch(e){$('#account-status').textContent=e.message;$('#account-status').style.color='var(--red)'}}init();
 })();

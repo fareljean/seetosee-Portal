@@ -362,10 +362,13 @@
       return location.href.split('?')[0].split('#')[0] + '?room=' + encodeURIComponent(state.room);
     }
 
+    var boothPass = (new URLSearchParams(location.search).get('pass') || '').trim();
+
     async function api(action, opts) {
       opts = opts || {};
       var method = opts.method || (opts.body ? 'POST' : 'GET');
       var url = SIGNAL_URL + '?action=' + encodeURIComponent(action);
+      if (boothPass) url += '&pass=' + encodeURIComponent(boothPass);
       if (opts.query) {
         Object.keys(opts.query).forEach(function (k) {
           url += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(opts.query[k]);
@@ -374,8 +377,10 @@
       var init = { method: method, headers: {} };
       if (state.token) init.headers['X-Booth-Token'] = state.token;
       if (opts.body) {
+        var bodyObj = Object.assign({}, opts.body);
+        if (boothPass && (action === 'create' || action === 'join')) bodyObj.pass = boothPass;
         init.headers['Content-Type'] = 'application/json';
-        init.body = JSON.stringify(opts.body);
+        init.body = JSON.stringify(bodyObj);
       }
       var res = await fetch(url, init);
       var data = await res.json().catch(function () { return {}; });
@@ -827,10 +832,20 @@
       setStatus('Left the booth.', '');
     });
 
-    // Deep link ?room=CODE
+    // Admission: require ?pass= from SeeToSee Dashboard; deep link ?room=CODE
     (function boot() {
       var params = new URLSearchParams(location.search);
       var room = (params.get('room') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (!boothPass) {
+        document.getElementById('btnCreate').disabled = true;
+        document.getElementById('btnJoin').disabled = true;
+        setStatus('Enter from the SeeToSee Dashboard to open a booth. Open https://seetosee.org/Seeme/dashboard/#booth', 'err');
+        var note = document.querySelector('.lobby-note');
+        if (note) {
+          note.innerHTML = 'Booth access requires a signed pass. <a href="https://seetosee.org/Seeme/dashboard/#booth" style="color:var(--gold)">Enter from SeeToSee Dashboard →</a>';
+        }
+        return;
+      }
       if (room.length >= 4) {
         document.getElementById('joinCode').value = room;
         setStatus('Room ' + room + ' — tap Join room', 'ok');
