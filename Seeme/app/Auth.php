@@ -161,7 +161,7 @@ final class Auth
         $token = Security::randomToken();
         Database::transaction(function (PDO $pdo) use ($user, $token): void {
             $pdo->prepare('UPDATE password_reset_tokens SET used_at = UTC_TIMESTAMP(6) WHERE user_id = ? AND used_at IS NULL')->execute([$user['id']]);
-            $pdo->prepare('INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, created_at) VALUES (?, ?, UTC_TIMESTAMP(6) + INTERVAL 60 MINUTE, UTC_TIMESTAMP(6))')->execute([$user['id'], Security::tokenHash($token)]);
+            $pdo->prepare('INSERT INTO password_reset_tokens (user_id, token_hash, expires_at, created_at) VALUES (?, ?, UTC_TIMESTAMP(6) + INTERVAL 24 HOUR, UTC_TIMESTAMP(6))')->execute([$user['id'], Security::tokenHash($token)]);
         });
         Mailer::passwordReset((string) $user['name'], (string) $user['email'], $token);
         Audit::log((int) $user['id'], 'password.reset_requested');
@@ -248,6 +248,15 @@ final class Auth
             Mailer::welcome((string) $result['name'], (string) $result['email']);
         } catch (\Throwable $exception) {
             error_log('Welcome email delivery failed after successful account verification.');
+        }
+        try {
+            Mailer::verifiedMemberAlert(
+                (string) $result['name'],
+                (string) $result['email'],
+                (string) $result['purpose']
+            );
+        } catch (\Throwable $exception) {
+            error_log('Admin verification notification failed after successful account verification.');
         }
         return true;
     }

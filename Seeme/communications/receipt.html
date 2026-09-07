@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Confirm receipt · SeeToSee</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100svh;display:grid;place-items:center;padding:20px;background:#07080a;color:#f5f5f1;font:16px/1.5 Inter,system-ui,sans-serif}.card{width:min(580px,100%);padding:34px;border:1px solid #ffffff22;border-radius:24px;background:#101216;box-shadow:0 24px 70px #0008}.brand{color:#fff;font-weight:950;letter-spacing:.12em}.brand span{color:#e6c77a}h1{margin:30px 0 10px;font-size:clamp(32px,7vw,56px);line-height:.95;letter-spacing:-.06em}p{color:#a7aaad}.state{margin-top:22px;padding:14px 16px;border:1px solid #85d7a455;border-radius:12px;color:#a8e7bd}.state.error{border-color:#ef796f55;color:#ffaaa3}.btn{display:inline-flex;min-height:46px;align-items:center;padding:0 20px;border:0;border-radius:999px;background:#e6c77a;color:#111;text-decoration:none;font-weight:900}.muted{font-size:13px;color:#8c9399}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="brand">SEE<span>TO</span>SEE</div>
+    <h1 id="title">Confirming receipt…</h1>
+    <p id="copy">Please keep this page open for a moment.</p>
+    <div id="state" class="state" role="status" aria-live="polite">Checking the one-time receipt link.</div>
+    <p class="muted">This confirmation proves mailbox access at this time. It does not replace account verification, a password, or sign-in.</p>
+    <a class="btn" href="../dashboard/">Open dashboard</a>
+  </main>
+  <script>
+    (async()=>{
+      const title=document.getElementById('title'),copy=document.getElementById('copy'),state=document.getElementById('state');
+      const token=new URLSearchParams(location.search).get('token')||'';
+      history.replaceState(null,'',location.pathname);
+      if(!token){title.textContent='Receipt link unavailable';copy.textContent='This link is missing its receipt token.';state.textContent='The receipt could not be confirmed.';state.className='state error';return}
+      try{
+        const response=await fetch('../api/communications/receipt.php',{method:'POST',headers:{'Accept':'application/json','Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({token})});
+        const payload=await response.json().catch(()=>null);
+        if(!response.ok||!payload||!payload.ok)throw new Error(payload&&payload.error&&payload.error.message?payload.error.message:'The receipt link is invalid or expired.');
+        title.textContent=payload.data.already_confirmed?'Receipt already confirmed':'Receipt confirmed';
+        copy.textContent=payload.data.campaign_title?'Thank you. Your receipt for “'+payload.data.campaign_title+'” has been recorded.':'Thank you. Your receipt has been recorded.';
+        state.textContent='SeeToSee recorded this confirmation successfully.';
+      }catch(error){title.textContent='Receipt not confirmed';copy.textContent='This one-time link may be expired or already used.';state.textContent=error.message||'The receipt could not be confirmed.';state.className='state error'}
+    })();
+  </script>
+</body>
+</html>

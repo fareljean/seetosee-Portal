@@ -1,0 +1,20 @@
+.communications-card{border-color:#e6c77a55;background:linear-gradient(145deg,#17140d,#0b0c0f)}
+.communications-card .cc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.communications-card .cc-pill{padding:8px 12px;border:1px solid #85d7a455;border-radius:999px;color:var(--green);font-size:10px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
+.communications-card .cc-pill.locked{border-color:#ffffff2e;color:var(--muted)}
+.communications-card .cc-block{margin-top:22px;padding-top:20px;border-top:1px solid var(--line)}
+.communications-card .cc-block:first-of-type{margin-top:18px;padding-top:0;border-top:0}
+.communications-card .cc-block h3{margin:0 0 7px;font-size:20px;letter-spacing:-.03em}
+.communications-card .cc-note{margin:0 0 14px;color:var(--muted);font-size:13px}
+.communications-card textarea{width:100%;min-height:130px;resize:vertical;border:1px solid #ffffff24;border-radius:10px;background:#08090c;color:#fff;padding:12px;font:inherit;outline:none}
+.communications-card textarea:focus{border-color:var(--gold)}
+.communications-card .cc-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:15px 0}
+.communications-card .cc-stat{padding:12px;border:1px solid var(--line);border-radius:12px;background:#0b0d10}
+.communications-card .cc-stat span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em}
+.communications-card .cc-stat strong{display:block;margin-top:4px;font-size:22px}
+.communications-card .cc-lock{padding:12px;border:1px solid #e6c77a55;border-radius:12px;color:#e8cf78;background:#e6c77a0d}
+.communications-card .cc-table{margin-top:12px}
+.communications-card .cc-table table{min-width:760px}
+.communications-card .cc-view{min-height:30px;padding:0 10px;border:1px solid #ffffff25;border-radius:999px;background:#ffffff08;color:#fff;cursor:pointer}
+.communications-card .cc-view:hover{border-color:#e6c77a88;color:#e6c77a}
+@media(max-width:700px){.communications-card .cc-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}

@@ -29,7 +29,7 @@ final class Mailer
             'A password reset was requested for ' . self::escape($name) . '. If this was not you, no action is needed.',
             'Choose a new password',
             $url,
-            'This link expires in 60 minutes and can be used once.'
+            'This link expires in 24 hours and can be used once.'
         ));
     }
 
@@ -62,6 +62,31 @@ final class Mailer
         ));
     }
 
+    public static function verifiedMemberAlert(string $name, string $email, string $purpose): void
+    {
+        $body = '<p style="margin:0 0 16px">A SeeToSee member completed email verification.</p>'
+            . '<table style="width:100%;border-collapse:collapse">'
+            . self::row('Name', $name)
+            . self::row('Email', $email)
+            . self::row('Purpose', $purpose)
+            . self::row('Verified UTC', gmdate('Y-m-d H:i:s'))
+            . '</table>';
+        $html = self::template(
+            'Member email verified',
+            'The verification checkpoint completed successfully.',
+            'Open the dashboard',
+            rtrim(Env::require('APP_URL'), '/') . '/dashboard/',
+            $body
+        );
+        foreach (self::adminRecipients() as $recipient) {
+            try {
+                self::send($recipient, 'SeeToSee verified member — ' . $email, $html);
+            } catch (\Throwable $exception) {
+                error_log('Admin verification notification delivery failed.');
+            }
+        }
+    }
+
     public static function subscription(string $name, string $email, string $status): void
     {
         self::send($email, 'SeeToSee membership update', self::template(
@@ -92,6 +117,19 @@ final class Mailer
             'Contact SeeToSee',
             rtrim(Env::require('APP_URL'), '/') . '/',
             'If you did not make this change, contact support immediately.'
+        ));
+    }
+
+    public static function communication(string $name, string $email, string $subject, string $body, string $receiptUrl): void
+    {
+        $safeBody = nl2br(self::escape($body), false);
+        self::send($email, $subject, self::template(
+            'SeeToSee communication',
+            '<p style="margin:0 0 16px">Hello ' . self::escape($name !== '' ? $name : 'SeeToSee member') . '.</p>'
+                . '<div style="padding:16px;border:1px solid #ffffff1c;border-radius:12px;background:#0b0d10;white-space:normal">' . $safeBody . '</div>',
+            'Confirm receipt',
+            $receiptUrl,
+            'This one-time receipt link records mailbox access for this message. It does not replace account verification or sign-in.'
         ));
     }
 
@@ -177,6 +215,22 @@ final class Mailer
         }
     }
 
+    private static function adminRecipients(): array
+    {
+        $raw = trim((string) Env::get('MAIL_ADMIN_RECIPIENTS', ''));
+        if ($raw === '') {
+            return [];
+        }
+        $recipients = [];
+        foreach (preg_split('/[,;\s]+/', $raw) ?: [] as $candidate) {
+            $candidate = strtolower(trim((string) $candidate));
+            if ($candidate !== '' && filter_var($candidate, FILTER_VALIDATE_EMAIL)) {
+                $recipients[$candidate] = true;
+            }
+        }
+        return array_keys($recipients);
+    }
+
     private static function encodeHeader(string $value): string
     {
         return '=?UTF-8?B?' . base64_encode(str_replace(["\r", "\n"], '', $value)) . '?=';
@@ -202,4 +256,3 @@ final class Mailer
             . '<div style="color:#8c9399;font-size:13px;line-height:1.6">' . $footer . '</div></div></div></body></html>';
     }
 }
-
