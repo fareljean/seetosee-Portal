@@ -278,6 +278,10 @@ final class Communications
     {
         $publicId = strtoupper(bin2hex(random_bytes(13)));
         $sender = Env::require('MAIL_FROM_ADDRESS');
+        $configuredSender = strtolower(trim(Env::require('CONTROL_CENTER_SENDER_EMAIL')));
+        if (strtolower(trim($sender)) !== $configuredSender) {
+            throw new ApiException(500, 'communications_sender_mismatch', 'The communications sender is not configured consistently on the server.');
+        }
         $statement = Database::connection()->prepare('INSERT INTO communications_campaigns (public_id, kind, title, subject, body_text, sender_email, audience_label, status, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))');
         $statement->execute([$publicId, $kind, $title, $subject, $body, $sender, $audience, 'sending', $userId]);
         return ['id' => (int) Database::connection()->lastInsertId(), 'public_id' => $publicId, 'subject' => $subject];
