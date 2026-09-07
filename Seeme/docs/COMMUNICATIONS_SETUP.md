@@ -10,6 +10,8 @@ Set these values in the server's private `.env` file. Do not commit the file
 or paste its contents into GitHub.
 
 - `MAIL_FROM_ADDRESS` — the approved authenticated sending mailbox.
+- `CONTROL_CENTER_SENDER_EMAIL` — must exactly match `MAIL_FROM_ADDRESS` for
+  Control Center sends. Set this privately to the approved sender mailbox.
 - `MAIL_ADMIN_RECIPIENTS` — existing verification/admin-alert recipients.
 - `CONTROL_CENTER_OPERATOR_EMAILS` — the three approved, verified operator
   account addresses, comma-separated.
