@@ -1,1 +1,1 @@
-LOAD_FROM_/workspace/PUSH_FINAL.json
+@/workspace/REAL_dashboard.js
