@@ -5,13 +5,14 @@ namespace SeeToSee;
 
 final class StripeClient
 {
-    public static function commerceCheckout(array $member, string $orderPublicId, array $product, string $priceId): array
+    public static function commerceCheckout(array $member, string $orderPublicId, array $product, string $priceId, ?string $returnPath = null): array
     {
         $mode = ($product['product_type'] ?? '') === 'subscription' ? 'subscription' : 'payment';
+        $returnBase = self::checkoutReturnBase($product, $returnPath);
         $params = [
             'mode' => $mode,
-            'success_url' => rtrim(Env::require('APP_URL'), '/') . '/dashboard/?purchase=success&order=' . rawurlencode($orderPublicId),
-            'cancel_url' => rtrim(Env::require('APP_URL'), '/') . '/dashboard/?purchase=canceled&order=' . rawurlencode($orderPublicId),
+            'success_url' => $returnBase . '?purchase=success&order=' . rawurlencode($orderPublicId),
+            'cancel_url' => $returnBase . '?purchase=canceled&order=' . rawurlencode($orderPublicId),
             'client_reference_id' => (string) $member['public_id'],
             'line_items[0][price]' => $priceId,
             'line_items[0][quantity]' => '1',
@@ -40,6 +41,43 @@ final class StripeClient
             throw new ApiException(502, 'stripe_response_invalid', 'Stripe did not return a checkout URL.');
         }
         return ['checkout_url' => $session['url'], 'checkout_session_id' => $session['id']];
+    }
+
+    /**
+     * Tryout products return to PrivateBooths booth (absolute seetosee.org URL or TRYOUT_BOOTH_URL).
+     * Optional $returnPath overrides (absolute http(s) URL, or path relative to site root).
+     * All other products keep Seeme dashboard returns via APP_URL.
+     */
+    public static function checkoutReturnBase(array $product, ?string $returnPath = null): string
+    {
+        $explicit = is_string($returnPath) ? trim($returnPath) : '';
+        if ($explicit !== '') {
+            if (preg_match('#^https?://#i', $explicit) === 1) {
+                return rtrim($explicit, '/');
+            }
+            $path = '/' . ltrim($explicit, '/');
+            return rtrim(Env::require('APP_URL'), '/') . rtrim($path, '/');
+        }
+
+        $productId = (string) ($product['product_id'] ?? '');
+        if (self::isTryoutProduct($productId)) {
+            $tryout = trim((string) Env::get('TRYOUT_BOOTH_URL', ''));
+            if ($tryout !== '') {
+                return rtrim($tryout, '/');
+            }
+            // APP_URL is Seeme — tryout booth lives on site root PrivateBooths.
+            return 'https://seetosee.org/PrivateBooths/booth';
+        }
+
+        return rtrim(Env::require('APP_URL'), '/') . '/dashboard';
+    }
+
+    public static function isTryoutProduct(string $productId): bool
+    {
+        return $productId === 'tryout.pack.3'
+            || $productId === 'subscription.tryout.monthly'
+            || str_starts_with($productId, 'tryout.')
+            || str_starts_with($productId, 'subscription.tryout.');
     }
 
     public static function retrieveCheckoutSession(string $sessionId): array
@@ -128,4 +166,3 @@ final class StripeClient
         return $decoded;
     }
 }
-

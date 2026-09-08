@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SeeToSee — Enter Booth</title>
+<meta name="description" content="Go straight into a SeeToSee private booth. Pay to try: $10 pack or $25 monthly.">
+<style>
+:root{color-scheme:light;--bg:#efe4d2;--panel:#fffaf0;--ink:#17130e;--muted:rgba(35,29,20,.62);--line:rgba(23,19,14,.16);--accent:#8f6f1c;--ok:#2f6b45;--err:#8a2f2f}
+*{box-sizing:border-box}
+html,body{min-height:100%;margin:0}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 50% 0,#fffaf0 0,#efe4d2 58%,#e3d3bc 100%);color:var(--ink);display:grid;place-items:center;padding:24px}
+.shell{width:min(920px,100%)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:34px}
+.brand{font-weight:900;letter-spacing:.18em;font-size:clamp(1rem,3vw,1.4rem)}
+.brand span{color:var(--accent)}
+.back{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:3px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase}
+.kicker{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+h1{font-size:clamp(2.2rem,7vw,5rem);line-height:.92;letter-spacing:-.055em;margin:0 0 14px;max-width:780px}
+.lede{max-width:640px;color:var(--muted);font-size:clamp(.95rem,2vw,1.12rem);line-height:1.55;margin:0 0 22px}
+.banner{display:none;margin:0 0 18px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,250,240,.85);font-size:.9rem;line-height:1.45}
+.banner.show{display:block}
+.banner.ok{border-color:rgba(47,107,69,.35);color:var(--ok)}
+.banner.err{border-color:rgba(138,47,47,.35);color:var(--err)}
+.access{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 22px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,250,240,.65)}
+.access .label{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.access .value{font-weight:800}
+.paywall{display:none;margin:0 0 22px;padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,250,240,.8);box-shadow:0 20px 50px rgba(80,60,30,.08)}
+.paywall.show{display:block}
+.paywall h2{margin:0 0 8px;font-size:1.15rem}
+.paywall p{margin:0 0 14px;color:var(--muted);line-height:1.5;font-size:.92rem}
+.pay-row{display:flex;flex-wrap:wrap;gap:10px}
+button,.btn{appearance:none;border:0;border-radius:999px;padding:12px 18px;font:inherit;font-size:.86rem;font-weight:800;letter-spacing:.04em;cursor:pointer}
+.btn-pay{background:var(--accent);color:#fffaf0}
+.btn-sub{background:#17130e;color:#fffaf0}
+.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.rooms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.room{min-height:240px;border:1px solid var(--line);border-radius:22px;background:rgba(255,250,240,.75);padding:24px;text-decoration:none;color:inherit;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 28px 70px rgba(80,60,30,.10);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.room:hover,.room:focus-visible{transform:translateY(-3px);box-shadow:0 34px 80px rgba(80,60,30,.16);border-color:rgba(143,111,28,.45);outline:none}
+.room.locked{opacity:.55;pointer-events:none;filter:grayscale(.15)}
+.num{font-size:.68rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.room h2{font-size:clamp(1.8rem,5vw,3.4rem);letter-spacing:-.04em;margin:16px 0 8px}
+.room p{color:var(--muted);line-height:1.45;margin:0;max-width:32ch}
+.enter{margin-top:28px;font-size:.74rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;display:flex;justify-content:space-between;gap:12px}
+.note{margin-top:18px;color:var(--muted);font-size:.78rem;line-height:1.45}
+@media(max-width:680px){body{padding:16px}.rooms{grid-template-columns:1fr}.room{min-height:190px;padding:20px}.top{margin-bottom:24px}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="top">
+    <div class="brand">SEE<span>TO</span>SEE</div>
+    <a class="back" href="../">PrivateBooths</a>
+  </div>
+  <div class="kicker">Straight to booth · tryout</div>
+  <h1>Enter the room.</h1>
+  <p class="lede">No middle steps. Pick a booth and you land in it. Prefer Safari if Chrome shows Not Secure. Sign in required to purchase tryout access.</p>
+
+  <div class="banner" id="purchaseBanner" role="status"></div>
+
+  <div class="access" id="accessBar">
+    <div>
+      <div class="label">Account</div>
+      <div class="value" id="accountState">Checking sign-in…</div>
+    </div>
+    <div>
+      <div class="label">Tryout</div>
+      <div class="value" id="tryoutState">—</div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn-ghost" type="button" id="signinBtn" data-auth-open="login">Sign in</button>
+      <button class="btn-ghost" type="button" id="signoutBtn" hidden>Sign out</button>
+    </div>
+  </div>
+
+  <section class="paywall" id="paywall" aria-label="Tryout paywall">
+    <h2>Pay to try</h2>
+    <p>No active tryout subscription and no credits left. Buy a 3-credit pack ($10) or monthly tryout ($25). Checkout uses Seeme + Stripe — you must be signed in.</p>
+    <div class="pay-row">
+      <button class="btn-pay" type="button" id="payPack" data-product="tryout.pack.3">Pay $10 · 3 credits</button>
+      <button class="btn-sub" type="button" id="payMonthly" data-product="subscription.tryout.monthly">Pay $25 / month</button>
+    </div>
+  </section>
+
+  <section class="rooms" aria-label="Straight to SeeToSee booths">
+    <a class="room locked" id="enterIpv1" href="https://fareljean.com/FJNBoothIPv1/" aria-label="Open two-seat booth now" aria-disabled="true">
+      <div>
+        <div class="num">Booth 01</div>
+        <h2>2-SEAT</h2>
+        <p>Production two-person booth. Create or join with a code.</p>
+      </div>
+      <div class="enter"><span>Enter booth</span><span aria-hidden="true">↗</span></div>
+    </a>
+    <a class="room locked" id="enterIpv2" href="https://fareljean.com/BoothsOrigins/1FJNBoothIPv2/" aria-label="Open four-seat booth now" aria-disabled="true">
+      <div>
+        <div class="num">Booth 02</div>
+        <h2>4-SEAT</h2>
+        <p>Origins four-angle booth. Create or join with a room key.</p>
+      </div>
+      <div class="enter"><span>Enter booth</span><span aria-hidden="true">↗</span></div>
+    </a>
+  </section>
+  <p class="note">Tryout Enter links stay on this page. Paid Portal Enter with a signed pass stays on the Seeme dashboard (unchanged). NDA Gate untouched.</p>
+</main>
+<script src="/Seeme/assets/auth.js?v=27.1.0-tryout"></script>
+<script>
+(function () {
+  'use strict';
+  var accountState = document.getElementById('accountState');
+  var tryoutState = document.getElementById('tryoutState');
+  var paywall = document.getElementById('paywall');
+  var signinBtn = document.getElementById('signinBtn');
+  var signoutBtn = document.getElementById('signoutBtn');
+  var enterIpv1 = document.getElementById('enterIpv1');
+  var enterIpv2 = document.getElementById('enterIpv2');
+  var payPack = document.getElementById('payPack');
+  var payMonthly = document.getElementById('payMonthly');
+  var banner = document.getElementById('purchaseBanner');
+  var hasAccess = false;
+
+  function showBanner(text, ok) {
+    banner.textContent = text || '';
+    banner.className = 'banner show ' + (ok ? 'ok' : 'err');
+  }
+
+  function setEnterEnabled(enabled) {
+    hasAccess = !!enabled;
+    [enterIpv1, enterIpv2].forEach(function (el) {
+      el.classList.toggle('locked', !enabled);
+      el.setAttribute('aria-disabled', enabled ? 'false' : 'true');
+      if (enabled) el.removeAttribute('tabindex');
+      else el.setAttribute('tabindex', '-1');
+    });
+    paywall.classList.toggle('show', !enabled);
+  }
+
+  function gateClicks(e) {
+    if (!hasAccess) {
+      e.preventDefault();
+      showBanner('Pay $10 or $25 (and sign in) before Enter.', false);
+      paywall.classList.add('show');
+      paywall.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+  enterIpv1.addEventListener('click', gateClicks);
+  enterIpv2.addEventListener('click', gateClicks);
+
+  function renderSignedOut() {
+    accountState.textContent = 'Not signed in';
+    tryoutState.textContent = 'Sign in required';
+    signinBtn.hidden = false;
+    signoutBtn.hidden = true;
+    setEnterEnabled(false);
+  }
+
+  async function loadTryout() {
+    var member = window.SeeToSeeAuth && SeeToSeeAuth.member();
+    if (!member) {
+      renderSignedOut();
+      return;
+    }
+    accountState.textContent = (member.name || 'Member') + (member.email_verified ? ' · Verified' : ' · Verify email');
+    signinBtn.hidden = true;
+    signoutBtn.hidden = false;
+    try {
+      var r = await SeeToSeeAuth.request('commerce/status.php');
+      var t = (r && r.data && r.data.tryout) || {};
+      var credits = Number(t.credits || 0);
+      var active = !!t.active;
+      var access = !!t.has_access || active || credits > 0;
+      tryoutState.textContent = active
+        ? 'tryout.active'
+        : (credits > 0 ? (credits + ' credit' + (credits === 1 ? '' : 's')) : 'No access');
+      setEnterEnabled(access);
+    } catch (err) {
+      tryoutState.textContent = 'Status unavailable';
+      setEnterEnabled(false);
+      showBanner((err && err.message) || 'Could not load tryout status.', false);
+    }
+  }
+
+  async function startCheckout(productId, button) {
+    var member = SeeToSeeAuth.member();
+    if (!member) {
+      SeeToSeeAuth.open('login');
+      return;
+    }
+    button.disabled = true;
+    try {
+      var r = await SeeToSeeAuth.request('commerce/checkout.php', {
+        method: 'POST',
+        body: { product_id: productId }
+      });
+      if (!r || !r.data || !r.data.checkout_url) {
+        throw new Error('Checkout returned no Stripe URL.');
+      }
+      location.href = r.data.checkout_url;
+    } catch (err) {
+      showBanner((err && err.message) || 'Stripe checkout failed. Create Stripe prices and run sql/tryout_paywall.sql first.', false);
+      button.disabled = false;
+    }
+  }
+
+  payPack.addEventListener('click', function (e) {
+    startCheckout(e.currentTarget.getAttribute('data-product'), e.currentTarget);
+  });
+  payMonthly.addEventListener('click', function (e) {
+    startCheckout(e.currentTarget.getAttribute('data-product'), e.currentTarget);
+  });
+  signoutBtn.addEventListener('click', async function () {
+    await SeeToSeeAuth.signOut();
+  });
+
+  (function showPurchaseReturn() {
+    var q = new URLSearchParams(location.search);
+    var purchase = q.get('purchase');
+    if (purchase === 'success') {
+      showBanner('Payment received. When credits or tryout.active sync, Enter unlocks below.', true);
+    } else if (purchase === 'canceled') {
+      showBanner('Checkout canceled. You can try again anytime.', false);
+    }
+    if (purchase) {
+      try {
+        q.delete('purchase');
+        q.delete('order');
+        var clean = location.pathname + (q.toString() ? '?' + q.toString() : '') + location.hash;
+        history.replaceState(null, '', clean);
+      } catch (_) {}
+    }
+  })();
+
+  async function init() {
+    try {
+      await SeeToSeeAuth.ready;
+      await loadTryout();
+      document.addEventListener('seetosee:auth-changed', function () { loadTryout(); });
+    } catch (err) {
+      renderSignedOut();
+      showBanner((err && err.message) || 'Account system did not initialize.', false);
+    }
+  }
+  init();
+})();
+</script>
+</body>
+</html>
