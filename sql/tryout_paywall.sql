@@ -1,5 +1,5 @@
 -- SeeToSee tryout paywall — run on Seeme DB (no migration framework in repo).
--- Do NOT invent Stripe secret keys. Replace price_REPLACE_* after Stripe Dashboard create.
+-- Do NOT invent Stripe secret keys. Live Stripe price IDs are set below.
 -- Do NOT modify portal $24 or prefix $12 product rows.
 
 -- ---------------------------------------------------------------------------
@@ -51,7 +51,7 @@ INSERT INTO product_catalog (
   'usd',
   NULL,
   NULL,
-  'price_REPLACE_tryout_pack3',
+  'price_1UDJGgK4qiJBJ8iLhQI06Rnq',
   'STRIPE_TRYOUT_PACK3_PRICE_ID',
   'active',
   50
@@ -64,7 +64,7 @@ INSERT INTO product_catalog (
   'usd',
   'month',
   'tryout.active',
-  'price_REPLACE_tryout_monthly',
+  'price_1UDJGgK4qiJBJ8iL0CR8YBC9',
   'STRIPE_TRYOUT_MONTHLY_PRICE_ID',
   'active',
   51
@@ -82,13 +82,8 @@ ON DUPLICATE KEY UPDATE
   display_order = VALUES(display_order);
 
 -- ---------------------------------------------------------------------------
--- 3) After Stripe Dashboard prices exist, fill real IDs (example):
--- ---------------------------------------------------------------------------
--- UPDATE product_catalog
---   SET stripe_price_id = 'price_XXXX_REAL_PACK3'
---   WHERE product_id = 'tryout.pack.3';
--- UPDATE product_catalog
---   SET stripe_price_id = 'price_XXXX_REAL_MONTHLY'
---   WHERE product_id = 'subscription.tryout.monthly';
+-- 3) Live Stripe prices (also optional Hostinger .env overrides):
+--    tryout.pack.3              → price_1UDJGgK4qiJBJ8iLhQI06Rnq ($10 one-time)
+--    subscription.tryout.monthly → price_1UDJGgK4qiJBJ8iL0CR8YBC9 ($25/mo)
 -- Or set STRIPE_TRYOUT_PACK3_PRICE_ID / STRIPE_TRYOUT_MONTHLY_PRICE_ID in Hostinger .env
 -- (env wins when stripe_price_env_key is set and non-empty).

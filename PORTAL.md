@@ -1,23 +1,9 @@
-# SeeToSee Portal Loop
+# SeeToSee Portal — booth pass & deploy notes
 
-## Intended happy path
+## Booth pass (HMAC)
 
-1. Member verifies their email.
-2. Member buys the Portal through Stripe.
-3. The verified Stripe webhook grants `portal.active`.
-4. The member returns to the dashboard (`?purchase=success`) and selects **Enter**.
-5. Seeme mints a signed, 45-minute booth pass.
-6. The selected FJN booth verifies the pass on **create** / **join** before loading the room runtime.
-
-## Contract
-
-- Portal product: `subscription.portal.monthly`
-- One-use consultation product: `consultation.personal`
-- Entitlement: `portal.active`
-- Pass TTL: 45 minutes (`2700` seconds)
-- Booth IDs: `ipv1` (2 seats), `ipv2` (4 seats)
-- Shared secret name: `BOOTH_SECRET` — **must be identical** on Seeme and both FJN booths
-- Pass shape: `<base64url-json>.<lowercase-hex-hmac-sha256>`
+- Secret env: `BOOTH_SECRET` (same value on Seeme + FJN booth hosts)
+- Algorithm: HMAC-SHA256 over canonical payload; token format `v1.<payload_b64url>.<sig_b64url>`
 - Signed payload fields: `sub`, `product`, `booth`, `seats`, `exp`, `jti`
 - Pass sources (FJN, in order): JSON body `pass`, query `pass`, header `X-Booth-Pass`
 
@@ -28,7 +14,7 @@ Straight-to-booth tryout lives at `PrivateBooths/booth/` (was Hostinger-only; no
 - Products: `tryout.pack.3` ($10 → 3 credits), `subscription.tryout.monthly` ($25 → `tryout.active`)
 - Success URL: `https://seetosee.org/PrivateBooths/booth/?purchase=success&order=`
 - Cancel URL: same path with `purchase=canceled`
-- Placeholder Stripe price IDs: `price_REPLACE_tryout_pack3`, `price_REPLACE_tryout_monthly`
+- Live Stripe price IDs: `price_1UDJGgK4qiJBJ8iLhQI06Rnq` (pack), `price_1UDJGgK4qiJBJ8iL0CR8YBC9` (monthly)
 - SQL Sedeck must run: `sql/tryout_paywall.sql`
 
 Portal `$24` and PreFix `$12` products are unchanged. NDA Gate and dashboard ipv2 Enter are left alone.
@@ -37,9 +23,9 @@ Portal `$24` and PreFix `$12` products are unchanged. NDA Gate and dashboard ipv
 
 Both `FJNBoothIPv1/signal.php` and `FJNBoothIPv2/signal.php` call `require_booth_pass()` (via `booth_pass.php`) at the start of **create** and **join** only. Poll / signal / leave / ping continue to use room tokens after admission.
 
-Missing secret, missing pass, bad signature, wrong booth, wrong seats, expired `exp`, bad product, empty `jti`, or missing `sub` → HTTP **403** JSON `{error:…}`.
+Missing secret, missing pass, bad signature, wrong booth, wrong seats, expired / reused `jti` → HTTP 401 JSON error; create/join does not proceed.
 
-## Deploy map (Hostinger)
+## Deploy map
 
 | Local path | Live upload path |
 |---|---|
@@ -51,15 +37,10 @@ Missing secret, missing pass, bad signature, wrong booth, wrong seats, expired `
 
 Configure `BOOTH_SECRET` in:
 
-- `Seeme/.env`
-- `FJNBoothIPv1/.env`
-- `FJNBoothIPv2/.env`
+- Seeme Hostinger `.env`
+- FJN booth PHP hosts (same secret)
 
 Same value everywhere. Do not commit real secrets.
-
-## SeeTest
-
-`SeeTest/rooms.html` and `SeeTest/apps/booth-*-seat/` are redirect stubs to `https://seetosee.org/Seeme/dashboard/#booth`. Naked FJN iframes are intentionally removed.
 
 ## Stripe return
 
@@ -68,10 +49,10 @@ Same value everywhere. Do not commit real secrets.
 
 ## Smoke tests
 
-1. `POST signal.php?action=create` with no pass → **403** `Booth pass required`
-2. Create/join with wrong booth, expired `exp`, or bad HMAC → **403**
-3. Valid pass in JSON body → create returns **201** / join works as before
-4. After create, poll/signal/leave with room token still work without re-sending the booth pass
+1. Seeme issues pass after paid portal entitlement
+2. FJN create/join with valid pass succeeds
+3. Tampered / expired / wrong-booth pass → 401
+4. Reused `jti` → 401
 5. Open booth UI without `?pass=` → create/join disabled; status links to Dashboard `#booth`
 6. Dashboard side nav includes **Booth**; `?purchase=success` shows Enter nudge
 7. `SeeTest/rooms.html` and booth app stubs redirect to Dashboard, not naked FJN

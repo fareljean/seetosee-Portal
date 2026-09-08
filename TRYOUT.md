@@ -28,16 +28,29 @@ Override base with env `TRYOUT_BOOTH_URL` (absolute URL, no trailing query). `AP
 
 Non-tryout products keep dashboard returns: `{APP_URL}/dashboard/?purchase=success|canceled&order=…`.
 
-## Stripe price IDs — fill after Dashboard create
+## Stripe price IDs (LIVE)
 
-Placeholders are intentionally invalid until replaced (ProductCatalog rejects IDs containing `REPLACE`):
+| product_id | live `stripe_price_id` | amount | optional env key |
+|---|---|---|---|
+| `tryout.pack.3` | `price_1UDJGgK4qiJBJ8iLhQI06Rnq` | $10 one-time | `STRIPE_TRYOUT_PACK3_PRICE_ID` |
+| `subscription.tryout.monthly` | `price_1UDJGgK4qiJBJ8iL0CR8YBC9` | $25/mo | `STRIPE_TRYOUT_MONTHLY_PRICE_ID` |
 
-| product_id | `stripe_price_id` placeholder | optional env key |
-|---|---|---|
-| `tryout.pack.3` | `price_REPLACE_tryout_pack3` | `STRIPE_TRYOUT_PACK3_PRICE_ID` |
-| `subscription.tryout.monthly` | `price_REPLACE_tryout_monthly` | `STRIPE_TRYOUT_MONTHLY_PRICE_ID` |
+### Live products
 
-**Sedeck must:** create Products + Prices in Stripe Dashboard → copy real `price_…` IDs → `UPDATE product_catalog` (and/or set the env keys on Hostinger). Do **not** invent secret keys; `STRIPE_SECRET_KEY` / webhook secret stay as-is.
+- Pack: `prod_VDkm38yqOkK8dH`
+- Monthly: `prod_VDkmVTfUJgBYXb`
+
+### Sandbox prices (reference only — do not use in live catalog)
+
+- Pack: `price_1UDIiDK6O25FYevdJlAzEpza`
+- Monthly: `price_1UDIiDK6O25FYevdlkevZLP5`
+
+### Archived empty products (no prices — ignore)
+
+- `prod_VDkliidwReGKoN`
+- `prod_VDkl4ufZ4Fpzar`
+
+Catalog SQL (`sql/tryout_paywall.sql`) already inserts the live price IDs. Optional: set `STRIPE_TRYOUT_PACK3_PRICE_ID` / `STRIPE_TRYOUT_MONTHLY_PRICE_ID` on Hostinger (env wins when `stripe_price_env_key` is set and non-empty). Do **not** invent secret keys; `STRIPE_SECRET_KEY` / webhook secret stay as-is.
 
 ## SQL Sedeck must run
 
