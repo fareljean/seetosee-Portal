@@ -1,1 +1,1 @@
-@/workspace/REAL_dashboard.js
+LOAD_FROM_FILE:/workspace/REAL_dashboard.js
