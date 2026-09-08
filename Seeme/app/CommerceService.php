@@ -58,7 +58,7 @@ final class CommerceService
         $metadata = is_array($session['metadata'] ?? null) ? $session['metadata'] : [];
         $rawJson = json_encode($session, JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
 
-        Database::transaction(function (PDO $pdo) use ($session, $sessionId, $orderPublicId, $priceId, $amount, $currency, $paymentStatus, $metadata, $rawJson): void {
+        $fulfillment = Database::transaction(function (PDO $pdo) use ($session, $sessionId, $orderPublicId, $priceId, $amount, $currency, $paymentStatus, $metadata, $rawJson): ?array {
             $orderStatement = $pdo->prepare('SELECT o.* FROM commerce_orders o WHERE o.public_id = ? FOR UPDATE');
             $orderStatement->execute([$orderPublicId]);
             $order = $orderStatement->fetch();
@@ -66,7 +66,12 @@ final class CommerceService
                 throw new ApiException(409, 'commerce_order_missing', 'Stripe checkout could not be matched to an order.');
             }
             if ($order['status'] === 'paid') {
-                return;
+                return [
+                    'user_id' => (int) $order['user_id'],
+                    'product_id' => (string) $order['product_id'],
+                    'order_public_id' => $orderPublicId,
+                    'already_paid' => true,
+                ];
             }
             if ($order['status'] !== 'pending') {
                 throw new ApiException(409, 'commerce_order_not_pending', 'This order is no longer payable.');
@@ -90,9 +95,25 @@ final class CommerceService
             $subscriptionId = is_string($session['subscription'] ?? null) ? $session['subscription'] : null;
             $pdo->prepare("UPDATE commerce_orders SET status = 'paid', stripe_payment_intent_id = ?, stripe_subscription_id = ?, paid_at = UTC_TIMESTAMP(6), raw_json = ?, updated_at = UTC_TIMESTAMP(6) WHERE id = ?")
                 ->execute([$paymentIntent, $subscriptionId, $rawJson, $order['id']]);
+
+            return [
+                'user_id' => (int) $order['user_id'],
+                'product_id' => (string) $order['product_id'],
+                'order_public_id' => $orderPublicId,
+                'already_paid' => false,
+            ];
         });
 
         Audit::log(null, 'commerce.payment_confirmed', ['order_public_id' => $orderPublicId, 'session_id' => $sessionId]);
+
+        // One-time tryout pack: grant 3 credits (idempotent on order public_id).
+        if (is_array($fulfillment)) {
+            TryoutCredits::grantFromPaidOrder(
+                (int) $fulfillment['user_id'],
+                (string) $fulfillment['order_public_id'],
+                (string) $fulfillment['product_id']
+            );
+        }
     }
 
     public static function checkoutFailedOrExpired(array $session, string $reason): void
@@ -158,11 +179,18 @@ final class CommerceService
     {
         $orders = Database::connection()->prepare('SELECT public_id, product_id, expected_amount_cents AS amount_cents, expected_currency AS currency, status, paid_at, created_at FROM commerce_orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 100');
         $orders->execute([$userId]);
+        $tryoutActive = EntitlementService::hasActive($userId, 'tryout.active');
+        $credits = TryoutCredits::balance($userId);
         return [
             'prefix' => PrefixService::statusForUser($userId),
             'entitlements' => EntitlementService::activeForUser($userId),
             'products' => ProductCatalog::publicCatalog(),
             'orders' => $orders->fetchAll(),
+            'tryout' => [
+                'active' => $tryoutActive,
+                'credits' => $credits,
+                'has_access' => $tryoutActive || $credits > 0,
+            ],
         ];
     }
 
