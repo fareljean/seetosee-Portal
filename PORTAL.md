@@ -44,6 +44,10 @@ Configure `BOOTH_SECRET` in:
 
 Same value everywhere. Do not commit real secrets.
 
+## Paid Enter targets (2026-09-08)
+
+Until production `FJNBoothIPv2/` is restored, dashboard paid Enter for `ipv2` opens `https://fareljean.com/BoothsOrigins/1FJNBoothIPv2/?pass=…`. Do **not** send paid traffic to prod `FJNBoothIPv2/` (404). Two-seat paid Enter remains `FJNBoothIPv1/`. PrivateBooths tryout door is separate and already routes 4-seat to Origins.
+
 ## SeeTest
 
 `SeeTest/rooms.html` and `SeeTest/apps/booth-*-seat/` are redirect stubs to `https://seetosee.org/Seeme/dashboard/#booth`. Naked FJN iframes are intentionally removed.
